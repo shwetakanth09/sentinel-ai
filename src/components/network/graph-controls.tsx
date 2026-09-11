@@ -1,20 +1,11 @@
 "use client";
 
-import {
-  Search,
-  Filter,
-  ZoomIn,
-  ZoomOut,
-  RotateCcw,
-  Crosshair,
-  CircleDot,
-} from "lucide-react";
+import { Filter, RotateCcw } from "lucide-react";
 import { useApp } from "@/components/providers/app-provider";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ENTITY_TYPE_LIST, ENTITY_TYPE_CONFIG } from "@/lib/entity-config";
 import { RELATIONSHIP_TYPES } from "@/data/relationships";
-import type { EntityType, RelationshipType } from "@/types";
+import type { RelationshipType } from "@/types";
 
 export function GraphControls() {
   const {

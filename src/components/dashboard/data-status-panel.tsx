@@ -6,7 +6,7 @@ import { useApp } from "@/components/providers/app-provider";
 import { formatDateTime } from "@/lib/utils";
 
 export function DataStatusPanel() {
-  const { dataSources, cases, metrics } = useApp();
+  const { dataSources, metrics } = useApp();
   const processed = dataSources.filter((s) => s.processed);
   const latest = processed[processed.length - 1];
 

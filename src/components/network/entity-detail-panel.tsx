@@ -4,13 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import {
   X,
-  UserRound,
-  Building2,
-  Smartphone,
   Car,
-  MapPin,
-  Landmark,
-  CalendarDays,
   Network,
   Share2,
   ArrowLeftRight,
@@ -37,16 +31,6 @@ import {
   getNetworkMetrics,
 } from "@/lib/graph-analytics";
 import { formatDateTime } from "@/lib/utils";
-
-const ICON = {
-  person: UserRound,
-  organization: Building2,
-  phone: Smartphone,
-  vehicle: Car,
-  location: MapPin,
-  account: Landmark,
-  event: CalendarDays,
-};
 
 export function EntityDetailPanel({ entity }: { entity: Entity }) {
   const { setSelectedEntityId } = useApp();

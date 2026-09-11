@@ -1,20 +1,17 @@
 "use client";
 
 import * as React from "react";
-import { Bot, Send, Sparkles, ShieldAlert, User } from "lucide-react";
+import { Bot, Send, Sparkles, ShieldAlert } from "lucide-react";
 import { answerQuery, SUGGESTED_QUESTIONS } from "@/lib/ai-assistant";
 import type { ChatMessage } from "@/types";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { formatTime } from "@/lib/utils";
-import { cn } from "@/lib/utils";
-import { useToast } from "@/components/ui/toast";
 
 export function AssistantPage() {
   const [messages, setMessages] = React.useState<ChatMessage[]>([]);
   const [input, setInput] = React.useState("");
   const [thinking, setThinking] = React.useState(false);
-  const { toast } = useToast();
 
   const ask = (question: string) => {
     const userMsg: ChatMessage = {
@@ -209,8 +206,4 @@ function MessageBubble({ message }: { message: ChatMessage }) {
       </div>
     </div>
   );
-}
-
-function MessageAvatar() {
-  return <User className="h-3.5 w-3.5" />;
 }

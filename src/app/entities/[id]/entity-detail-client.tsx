@@ -7,7 +7,6 @@ import { RiskMeter } from "@/components/shared/risk-meter";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { EntityDetailPanel } from "@/components/network/entity-detail-panel";
 import { RiskBreakdown } from "@/components/entities/risk-breakdown";
 import { ConnectionList } from "@/components/entities/connection-list";
 import { NetworkGraph } from "@/components/network/network-graph";

@@ -13,7 +13,6 @@ import {
   Bot,
   FileText,
   ShieldHalf,
-  Settings,
   UserRound,
   Activity,
 } from "lucide-react";

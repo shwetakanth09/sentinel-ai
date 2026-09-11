@@ -6,7 +6,7 @@ import CytoscapeComponent from "react-cytoscapejs";
 import coseBilkent from "cytoscape-cose-bilkent";
 import type { Core, ElementDefinition } from "cytoscape";
 import { useApp } from "@/components/providers/app-provider";
-import { ENTITY_TYPE_CONFIG, CLUSTER_CONFIG, RELATIONSHIP_COLORS } from "@/lib/entity-config";
+import { ENTITY_TYPE_CONFIG, RELATIONSHIP_COLORS } from "@/lib/entity-config";
 import type { EntityType } from "@/types";
 
 cytoscape.use(coseBilkent);
@@ -53,7 +53,6 @@ export function buildGraphElements({ entities, relationships, filters, focusEnti
   const visibleIds = new Set(visibleEntities.map((e) => e.id));
 
   for (const e of visibleEntities) {
-    const cfg = ENTITY_TYPE_CONFIG[e.type];
     nodes.push({
       data: {
         id: e.id,
@@ -105,7 +104,6 @@ export function NetworkGraph({ height, focusEntityId }: { height?: number; focus
     filterCluster,
     filterMinRisk,
     setSelectedEntityId,
-    metrics,
   } = useApp();
 
   const cyRef = React.useRef<Core | null>(null);
@@ -187,7 +185,6 @@ export function NetworkGraph({ height, focusEntityId }: { height?: number; focus
         selector: `node[type = "${type}"]`,
         style: {
           shape: NODE_SHAPES[type],
-          // @ts-ignore
           "background-color": cfg.fill,
           "background-opacity": 0.25,
           "border-width": 2,

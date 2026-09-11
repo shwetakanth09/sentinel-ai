@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Share2, ZoomIn, ZoomOut, RotateCcw, Crosshair, Info } from "lucide-react";
+import { Share2, ZoomIn, ZoomOut, RotateCcw, Crosshair } from "lucide-react";
 import { useApp } from "@/components/providers/app-provider";
 import { NetworkGraph } from "@/components/network/network-graph";
 import { GraphControls } from "@/components/network/graph-controls";
@@ -23,7 +23,7 @@ function useFocusEntity() {
 }
 
 export default function NetworkExplorerPage() {
-  const { selectedEntityId, setSelectedEntityId } = useApp();
+  const { selectedEntityId } = useApp();
   useFocusEntity();
   const graphStats = useGraphStats();
   const selectedEntity = selectedEntityId ? getEntity(selectedEntityId) : null;

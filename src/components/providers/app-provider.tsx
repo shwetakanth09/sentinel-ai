@@ -73,7 +73,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [filterMinRisk, setFilterMinRisk] = React.useState(0);
   const [filterDateRange, setFilterDateRange] = React.useState<string | null>(null);
 
-  const metrics = React.useMemo(() => getNetworkMetrics(), [relState]);
+  const metrics = React.useMemo(() => getNetworkMetrics(), []);
 
   const markAlertReviewed = React.useCallback((id: string) => {
     setAlertsState((prev) => AlertReducer(prev, { id }));

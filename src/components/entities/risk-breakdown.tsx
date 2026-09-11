@@ -1,7 +1,6 @@
 "use client";
 
 import type { Entity } from "@/types";
-import { RiskMeter } from "@/components/shared/risk-meter";
 import { Progress } from "@/components/ui/progress";
 import { getRiskFactors } from "@/lib/graph-analytics";
 import { cn } from "@/lib/utils";

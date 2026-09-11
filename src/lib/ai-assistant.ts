@@ -1,13 +1,11 @@
 import { entities, getEntity, getEntityName } from "@/data/entities";
-import { relationships } from "@/data/relationships";
 import { alerts } from "@/data/alerts";
 import { events } from "@/data/events";
 import { cases } from "@/data/cases";
-import type { EntityInsight, ChatMessage, PatternAlert } from "@/types";
+import type { EntityInsight, ChatMessage } from "@/types";
 import {
   getNetworkMetrics,
   getDirectConnections,
-  getNeighbors,
   getRiskFactors,
   detectBridgeEntities,
   degreeCentrality,
@@ -26,12 +24,6 @@ export function getAIInsights(): EntityInsight[] {
   const bridges = detectBridgeEntities();
   const bridgeNames = bridges.map(getEntityName);
   const highRisk = entities.filter((e) => e.riskIndicator >= 70);
-  const crossCluster = alerts.filter((a) =>
-    a.entities.some((eid) => {
-      const e = getEntity(eid);
-      return e?.bridge;
-    })
-  );
 
   return [
     {

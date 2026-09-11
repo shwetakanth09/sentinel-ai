@@ -1,17 +1,18 @@
 "use client";
 
 import * as React from "react";
-import { AlertTriangle, Share2, FileText, CheckCheck, ChevronDown } from "lucide-react";
+import { AlertTriangle, Share2, FileText, CheckCheck } from "lucide-react";
 import { useApp } from "@/components/providers/app-provider";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogContent, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogContent, DialogClose } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { getEntityName } from "@/data/entities";
 import { formatDateTime } from "@/lib/utils";
 import type { PatternAlert } from "@/types";
 import { useToast } from "@/components/ui/toast";
+import { useRouter } from "next/navigation";
 
 const SEVERITY_STYLE = {
   HIGH: { badge: "destructive", ring: "border-red/40" },
@@ -24,6 +25,7 @@ export function AlertsList() {
   const [filter, setFilter] = React.useState<"ALL" | "NEEDS_REVIEW" | "REVIEWED">("ALL");
   const [selected, setSelected] = React.useState<PatternAlert | null>(null);
   const { toast } = useToast();
+  const router = useRouter();
 
   const filtered = alerts.filter((a) => {
     if (filter === "NEEDS_REVIEW") return a.status === "needs_review";
@@ -131,7 +133,7 @@ export function AlertsList() {
                       if (first) {
                         window.dispatchEvent(new CustomEvent("focus-entity", { detail: first }));
                       }
-                      window.location.href = "/network-explorer";
+                      router.push("/network-explorer");
                     }}
                   >
                     <Share2 className="h-3.5 w-3.5" />

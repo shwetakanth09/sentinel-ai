@@ -5,7 +5,6 @@ import { Bell } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useApp } from "@/components/providers/app-provider";
-import { getEntityName } from "@/data/entities";
 import { formatDateTime } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 

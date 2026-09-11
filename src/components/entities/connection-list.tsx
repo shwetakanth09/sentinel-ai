@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpRight, ArrowDownLeft, Link2 } from "lucide-react";
+import { ArrowUpRight, ArrowDownLeft } from "lucide-react";
 import { getDirectConnections } from "@/lib/graph-analytics";
 import { getEntityName } from "@/data/entities";
-import { Badge } from "@/components/ui/badge";
 import { RELATIONSHIP_COLORS } from "@/lib/entity-config";
 import { formatDateTime } from "@/lib/utils";
 

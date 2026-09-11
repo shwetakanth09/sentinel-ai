@@ -9,8 +9,6 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { getEntity } from "@/data/entities";
 import { cn } from "@/lib/utils";
-import { ENTITY_TYPE_CONFIG } from "@/lib/entity-config";
-import type { EntityType } from "@/types";
 
 const TYPE_BADGE: Record<string, string> = {
   PERSON: "default",
