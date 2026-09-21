@@ -116,10 +116,6 @@ function LoginForm() {
           <br />
           Change it after first sign-in.
         </p>
-        <p className="mt-3 rounded-md border border-amber/20 bg-amber/10 px-3 py-2 text-center text-[10px] leading-relaxed text-amber">
-          Demonstration project. All people, entities and events are fictional — no real data
-          was used. Output is decision-support only.
-        </p>
       </div>
     </div>
   );
