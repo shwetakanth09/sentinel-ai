@@ -26,14 +26,14 @@ relationships in a criminal-network knowledge graph.
 
 ## Live Demo
 
-A temporary public demo is exposed through a Cloudflare quick tunnel while the local
+A temporary public demo is exposed through a Tunnelmole tunnel while the local
 server is running:
 
-- **URL:** https://colin-detailed-temporary-layer.trycloudflare.com
+- **URL:** https://n5ioij-ip-182-71-244-8.tunnelmole.net
 - **Email:** `admin@sentinel.local`
 - **Password:** `admin123`
 
-> The URL above is a **temporary quick tunnel**. It only works while the machine and
+> The URL above is a **temporary tunnel**. It only works while the machine and
 > tunnel process are running, and it changes every time the tunnel is restarted.
 > To run it yourself permanently, see [Getting Started](#getting-started).
 
