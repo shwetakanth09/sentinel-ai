@@ -26,16 +26,19 @@ relationships in a criminal-network knowledge graph.
 
 ## Live Demo
 
-A temporary public demo is exposed through a Tunnelmole tunnel while the local
-server is running:
+A temporary public demo is served through a localtunnel (`loca.lt`) tunnel while the
+local server is running:
 
-- **URL:** https://n5ioij-ip-182-71-244-8.tunnelmole.net
+- **URL:** https://open-ideas-rescue.loca.lt
 - **Email:** `admin@sentinel.local`
 - **Password:** `admin123`
 
-> The URL above is a **temporary tunnel**. It only works while the machine and
-> tunnel process are running, and it changes every time the tunnel is restarted.
-> To run it yourself permanently, see [Getting Started](#getting-started).
+> On first visit, localtunnel shows a one-time safety notice. Enter the **IP address shown
+> on that page** into the box and click **Continue** (once per visitor, valid for 7 days).
+>
+> The URL above is a **temporary tunnel**. It only works while the machine and tunnel
+> process are running, and it changes every time the tunnel is restarted. To run it
+> yourself permanently, see [Getting Started](#getting-started).
 
 ## Features
 
