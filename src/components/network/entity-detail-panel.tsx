@@ -70,7 +70,7 @@ export function EntityDetailPanel({ entity }: { entity: Entity }) {
         <div className="mb-4 rounded-md border border-border bg-card p-3">
           <RiskMeter value={entity.riskIndicator} showLabel size="lg" />
           <p className="mt-2 text-[11px] text-muted leading-snug">
-            Prototype analytical indicator based on observed relationships and
+            Analytical indicator based on observed relationships and
             activity patterns. Does not establish criminal activity and requires
             human verification.
           </p>

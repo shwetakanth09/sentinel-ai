@@ -1,9 +1,10 @@
-import { entities, getEntity, getEntityName } from "@/data/entities";
-import { alerts } from "@/data/alerts";
-import { events } from "@/data/events";
-import { cases } from "@/data/cases";
-import type { EntityInsight, ChatMessage } from "@/types";
+import { entities as mockEntities } from "@/data/entities";
+import { alerts as mockAlerts } from "@/data/alerts";
+import { events as mockEvents } from "@/data/events";
+import { cases as mockCases } from "@/data/cases";
+import type { ChatMessage, Entity, EntityInsight, InvestigationEvent } from "@/types";
 import {
+  type NetworkData,
   getNetworkMetrics,
   getDirectConnections,
   getRiskFactors,
@@ -11,6 +12,21 @@ import {
   degreeCentrality,
   betweennessCentrality,
 } from "./graph-analytics";
+
+export interface AssistantData extends NetworkData {
+  events: InvestigationEvent[];
+}
+
+export function emptyAssistantData(): AssistantData {
+  return {
+    entities: mockEntities,
+    relationships: [],
+    alerts: mockAlerts,
+    cases: mockCases,
+    dataSources: [],
+    events: mockEvents,
+  };
+}
 
 function id(): string {
   return `MSG-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -20,18 +36,32 @@ function now(): string {
   return new Date().toISOString();
 }
 
-export function getAIInsights(): EntityInsight[] {
-  const bridges = detectBridgeEntities();
-  const bridgeNames = bridges.map(getEntityName);
+function getEntityById(entities: Entity[], eid: string): Entity | undefined {
+  return entities.find((e) => e.id === eid);
+}
+
+function getEntityName(entities: Entity[], eid: string): string {
+  return getEntityById(entities, eid)?.name ?? eid;
+}
+
+function getClusterSize(entities: Entity[], cluster: "A" | "B" | "C"): number {
+  return entities.filter((e) => e.cluster === cluster).length;
+}
+
+export function getAIInsights(data: AssistantData = emptyAssistantData()): EntityInsight[] {
+  const { entities, relationships } = data;
+  const bridges = detectBridgeEntities(relationships, entities);
+  const bridgeNames = bridges.map((eid) => getEntityName(entities, eid));
   const highRisk = entities.filter((e) => e.riskIndicator >= 70);
 
   return [
     {
       id: "INSIGHT-1",
-      title: "3 major clusters identified",
-      summary: `Cluster A (${getClusterSize("A")}), Cluster B (${getClusterSize(
+      title: `${data.entities.length} entities analyzed across ${data.cases.filter((c) => c.status !== "Closed").length} active investigation(s)`,
+      summary: `Cluster A (${getClusterSize(entities, "A")}), Cluster B (${getClusterSize(
+        entities,
         "B"
-      )}), and Cluster C (${getClusterSize("C")} members) form distinct operational groups.`,
+      )}), and Cluster C (${getClusterSize(entities, "C")} members) form distinct operational groups.`,
       confidence: 0.91,
       evidenceCount: 5,
       evidence: [
@@ -87,19 +117,16 @@ export function getAIInsights(): EntityInsight[] {
   ];
 }
 
-function getClusterSize(id: "A" | "B" | "C"): number {
-  return entities.filter((e) => e.cluster === id).length;
-}
-
-export function answerQuery(query: string): ChatMessage {
+export function answerQuery(query: string, data: AssistantData = emptyAssistantData()): ChatMessage {
+  const { entities, relationships, alerts, cases, events } = data;
   const q = query.toLowerCase();
-  const bridgeEntities = detectBridgeEntities();
+  const bridgeEntities = detectBridgeEntities(relationships, entities);
 
-  if (q.includes("bridge") || q.includes("connect") && q.includes("cluster")) {
-    const bridgeEnts = bridgeEntities.map(getEntity);
+  if (q.includes("bridge") || (q.includes("connect") && q.includes("cluster"))) {
+    const bridgeEnts = bridgeEntities.map((eid) => getEntityById(entities, eid));
     const lines = bridgeEnts.map((e) => {
       if (!e) return "";
-      const dirs = getDirectConnections(e.id).length;
+      const dirs = getDirectConnections(e.id, relationships).length;
       return `• ${e.name} (${e.id}) — ${dirs} direct connections, links clusters ${e.cluster}.`;
     });
     return {
@@ -108,15 +135,16 @@ export function answerQuery(query: string): ChatMessage {
       content: `Bridge entities are individuals or objects with relationships crossing cluster boundaries. These are the ${bridgeEntities.length} entities linking otherwise separate networks:\n\n${lines.filter(Boolean).join("\n")}\n\nConfidence: 87%\n\nAI-generated investigative lead — requires independent verification.`,
       timestamp: now(),
       confidence: 0.87,
-      evidence: bridgeEntities.map((eid) => `${getEntityName(eid)} crosses cluster boundary.`),
+      evidence: bridgeEntities.map((eid) => `${getEntityName(entities, eid)} crosses cluster boundary.`),
     };
   }
 
   if (q.includes("strongest") && (q.includes("1042") || q.includes("arjun"))) {
-    const rels = getDirectConnections("PERSON-1042");
-    const strongest = rels.sort((a, b) => b.confidence - a.confidence).slice(0, 5);
+    const rels = getDirectConnections("PERSON-1042", relationships);
+    const strongest = [...rels].sort((a, b) => b.confidence - a.confidence).slice(0, 5);
     const lines = strongest.map(
       (r) => `• ${r.type} → ${getEntityName(
+        entities,
         r.source === "PERSON-1042" ? r.target : r.source
       )} (confidence ${(r.confidence * 100).toFixed(0)}%)`
     );
@@ -161,8 +189,8 @@ export function answerQuery(query: string): ChatMessage {
   }
 
   if (q.includes("centrality") || q.includes("highest") || q.includes("most important")) {
-    const dc = degreeCentrality();
-    const bc = betweennessCentrality();
+    const dc = degreeCentrality(relationships, entities);
+    const bc = betweennessCentrality(relationships, entities);
     const top = entities
       .filter((e) => e.type === "person")
       .map((e) => ({
@@ -179,17 +207,17 @@ export function answerQuery(query: string): ChatMessage {
       role: "assistant",
       content: `Entities ranked by network centrality:\n\n${lines.join("\n")}\n\nConfidence: 90%\n\nAI-generated investigative lead — requires independent verification.`,
       timestamp: now(),
-      confidence: 0.90,
-      evidence: ["Degree centrality and betweenness centrality computed over 37 entities."],
+      confidence: 0.9,
+      evidence: [`Degree centrality and betweenness centrality computed over ${entities.length} entities.`],
     };
   }
 
   if (q.includes("why") && (q.includes("flag") || q.includes("risk") || q.includes("1042") || q.includes("arjun"))) {
-    const ent = getEntity("PERSON-1042");
+    const ent = getEntityById(entities, "PERSON-1042");
     if (!ent) {
       return { id: id(), role: "assistant", content: "Entity not found.", timestamp: now() };
     }
-    const factors = getRiskFactors(ent);
+    const factors = getRiskFactors(ent, data);
     const lines = factors.map(
       (f) => `• ${f.label}: +${Math.round(f.weight * f.score)} (${f.detail})`
     );
@@ -204,7 +232,7 @@ export function answerQuery(query: string): ChatMessage {
   }
 
   if (q.includes("cluster") && (q.includes("which") || q.includes("show") || q.includes("list"))) {
-    const metrics = getNetworkMetrics();
+    const metrics = getNetworkMetrics(data);
     const lines = metrics.clusters.map(
       (c) => `• ${c.name} (Cluster ${c.id}): ${c.entityCount} entities, ${c.relationshipCount} internal relationships.\n  ${c.description}`
     );

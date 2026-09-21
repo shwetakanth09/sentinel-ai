@@ -8,7 +8,7 @@ import { GraphControls } from "@/components/network/graph-controls";
 import { EntityDetailPanel } from "@/components/network/entity-detail-panel";
 import { GraphLegend } from "@/components/network/graph-legend";
 import { Button } from "@/components/ui/button";
-import { getEntity } from "@/data/entities";
+import { getById } from "@/lib/entity-helpers";
 
 function useFocusEntity() {
   const { setSelectedEntityId } = useApp();
@@ -23,10 +23,10 @@ function useFocusEntity() {
 }
 
 export default function NetworkExplorerPage() {
-  const { selectedEntityId } = useApp();
+  const { selectedEntityId, entities } = useApp();
   useFocusEntity();
   const graphStats = useGraphStats();
-  const selectedEntity = selectedEntityId ? getEntity(selectedEntityId) : null;
+  const selectedEntity = selectedEntityId ? getById(entities, selectedEntityId) : null;
 
   const focusSelected = () => {
     if (selectedEntityId) {

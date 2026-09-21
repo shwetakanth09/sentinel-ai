@@ -8,8 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogContent, DialogClose } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
-import { getEntityName } from "@/data/entities";
 import { formatDateTime } from "@/lib/utils";
+import { entityName } from "@/lib/entity-helpers";
 import type { PatternAlert } from "@/types";
 import { useToast } from "@/components/ui/toast";
 import { useRouter } from "next/navigation";
@@ -21,7 +21,7 @@ const SEVERITY_STYLE = {
 } as const;
 
 export function AlertsList() {
-  const { alerts, markAlertReviewed } = useApp();
+  const { alerts, entities, markAlertReviewed } = useApp();
   const [filter, setFilter] = React.useState<"ALL" | "NEEDS_REVIEW" | "REVIEWED">("ALL");
   const [selected, setSelected] = React.useState<PatternAlert | null>(null);
   const { toast } = useToast();
@@ -103,7 +103,7 @@ export function AlertsList() {
                           key={eid}
                           className="rounded border border-border bg-card-alt px-2 py-0.5 text-[10px] text-foreground"
                         >
-                          {getEntityName(eid)} ({eid})
+                          {entityName(entities, eid)} ({eid})
                         </span>
                       ))}
                     </div>

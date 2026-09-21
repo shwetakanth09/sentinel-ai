@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { getAIInsights } from "@/lib/ai-assistant";
+import { useApp } from "@/components/providers/app-provider";
 
 export function AIInsightsPanel() {
-  const insights = getAIInsights();
+  const { entities, relationships, alerts, cases, dataSources, events } = useApp();
+  const insights = getAIInsights({ entities, relationships, alerts, cases, dataSources, events });
   return (
     <Card className="h-full">
       <CardHeader className="flex-row items-center justify-between space-y-0">

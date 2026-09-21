@@ -7,7 +7,7 @@ import { Dialog, DialogHeader, DialogTitle, DialogContent, DialogClose } from "@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDateTime, formatDate, formatTime } from "@/lib/utils";
-import { getEntityName } from "@/data/entities";
+import { entityName } from "@/lib/entity-helpers";
 import type { InvestigationEvent } from "@/types";
 import { useSearchParams } from "next/navigation";
 
@@ -33,7 +33,7 @@ const EVENT_ICON: Record<string, React.ComponentType<{ className?: string }>> = 
 };
 
 export function TimelinePage() {
-  const { events } = useApp();
+  const { events, entities } = useApp();
   const searchParams = useSearchParams();
   const entityParam = searchParams.get("entity");
   const [filter, setFilter] = React.useState<string>("all");
@@ -64,7 +64,7 @@ export function TimelinePage() {
           <h1 className="text-lg font-bold text-foreground">Timeline Analysis</h1>
           <p className="text-xs text-muted">
             Chronological view of events for CASE-2026-014
-            {entityParam ? ` — filtered for ${getEntityName(entityParam)}` : ""}
+            {entityParam ? ` — filtered for ${entityName(entities, entityParam)}` : ""}
           </p>
         </div>
         <div className="flex flex-wrap gap-1.5">
@@ -86,7 +86,7 @@ export function TimelinePage() {
 
       {filtered.length === 0 && (
         <Card className="p-8 text-center text-sm text-muted">
-          No events match the current filter{entityParam ? ` for ${getEntityName(entityParam)}` : ""}.
+          No events match the current filter{entityParam ? ` for ${entityName(entities, entityParam)}` : ""}.
         </Card>
       )}
 
@@ -154,13 +154,13 @@ export function TimelinePage() {
                   <div className="flex flex-wrap gap-1.5">
                     {selected.entities.map((id) => (
                       <span key={id} className="rounded border border-border bg-card-alt px-2 py-1 text-[11px] text-foreground">
-                        {getEntityName(id)} ({id})
+                        {entityName(entities, id)} ({id})
                       </span>
                     ))}
                   </div>
                 </div>
                 <p className="text-[10px] text-muted-light">
-                  Source: surveillance observation · synthetic demo event
+                  Source: surveillance observation · recorded event
                 </p>
               </div>
             </DialogContent>

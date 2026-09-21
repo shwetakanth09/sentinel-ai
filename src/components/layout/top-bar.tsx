@@ -1,13 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { Search, Bell, ChevronDown } from "lucide-react";
+import { Search, Bell, ChevronDown, LogOut } from "lucide-react";
 import { useApp } from "@/components/providers/app-provider";
-import { cases } from "@/data/cases";
 import { cn } from "@/lib/utils";
 
 export function TopBar() {
-  const { activeCaseId, setActiveCaseId } = useApp();
+  const { cases, activeCaseId, setActiveCaseId, user, logout } = useApp();
   const activeCase = cases.find((c) => c.id === activeCaseId);
   const [query, setQuery] = React.useState("");
   const open = query.trim().length > 0;
@@ -26,10 +25,6 @@ export function TopBar() {
       </div>
 
       <div className="ml-auto flex items-center gap-2.5">
-        <div className="rounded-md border border-accent/30 bg-accent/10 px-2 py-1 text-[10px] font-bold tracking-wider text-accent">
-          SYNTHETIC DATA
-        </div>
-
         <button
           className="relative rounded-md border border-border bg-card px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-card-alt transition-colors"
           title="Case selector"
@@ -50,22 +45,37 @@ export function TopBar() {
         <button className="relative rounded-md border border-border bg-card p-1.5 text-muted hover:text-foreground hover:bg-card-alt transition-colors cursor-pointer" title="Notifications">
           <Bell className="h-4 w-4" />
           <span className="absolute -right-0.5 -top-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red text-[8px] font-bold text-white">
-            {29}
+            {useAppAlertCount()}
           </span>
         </button>
 
         <div className="flex items-center gap-2 rounded-md border border-border bg-card px-2 py-1">
           <div className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-white">
-            SK
+            {user ? user.name.charAt(0).toUpperCase() : "U"}
           </div>
           <div className="hidden lg:block">
-            <p className="text-[11px] font-medium leading-tight text-foreground">Investigator</p>
-            <p className="text-[10px] leading-tight text-muted">SK · Cyber Wing</p>
+            <p className="text-[11px] font-medium leading-tight text-foreground">
+              {user ? user.name : "Investigator"}
+            </p>
+            <p className="text-[10px] leading-tight text-muted">{user ? user.role : "Analyst"}</p>
           </div>
         </div>
+
+        <button
+          onClick={logout}
+          title="Sign out"
+          className="rounded-md border border-border bg-card p-1.5 text-muted hover:text-foreground hover:bg-card-alt transition-colors cursor-pointer"
+        >
+          <LogOut className="h-4 w-4" />
+        </button>
       </div>
     </header>
   );
+}
+
+function useAppAlertCount() {
+  const { alerts } = useApp();
+  return alerts.filter((a) => a.status !== "reviewed" && a.status !== "dismissed").length;
 }
 
 function QuickSearch({ query, onClose }: { query: string; onClose: () => void }) {

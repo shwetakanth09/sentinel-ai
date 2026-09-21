@@ -34,9 +34,9 @@ export default function DashboardPage() {
       </div>
 
       <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
-        <KpiCard label="Total Entities" value={metrics.totalEntities} icon="Users" accent="text-accent" sub="37 analyzed in CASE-2026-014" />
-        <KpiCard label="Relationships" value={metrics.totalRelationships} icon="GitBranch" accent="text-cyan" sub="94 edges across 3 clusters" />
-        <KpiCard label="Active Alerts" value={metrics.totalAlerts} icon="Bell" accent="text-amber" sub="1 high · 3 medium · 4 low" />
+        <KpiCard label="Total Entities" value={metrics.totalEntities} icon="Users" accent="text-accent" sub="analyzed in CASE-2026-014" />
+        <KpiCard label="Relationships" value={metrics.totalRelationships} icon="GitBranch" accent="text-cyan" sub="edges across connected clusters" />
+        <KpiCard label="Active Alerts" value={metrics.totalAlerts} icon="Bell" accent="text-amber" sub="severity across PRIORITY levels" />
         <KpiCard label="High-Risk Indicators" value={metrics.highRiskIndicators} icon="Activity" accent="text-red" sub="Risk ≥ 70 · require review" />
       </div>
 
@@ -87,10 +87,10 @@ export default function DashboardPage() {
 
 import { Sparkles } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { entities } from "@/data/entities";
 
 function RecentDetectionsPanel() {
-  const recent = entities
+  const { entities } = useApp();
+  const recent = [...entities]
     .sort((a, b) => b.riskIndicator - a.riskIndicator)
     .slice(0, 6);
   return (

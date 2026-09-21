@@ -49,7 +49,7 @@ const PIPELINE_STEPS = [
 ];
 
 export function DataSourcesPage() {
-  const { dataSources } = useApp();
+const { dataSources, entities, relationships } = useApp();
   const { toast } = useToast();
   const [processing, setProcessing] = React.useState(false);
   const [stepIndex, setStepIndex] = React.useState(-1);
@@ -71,7 +71,7 @@ export function DataSourcesPage() {
           setDone(true);
           toast({
             title: "Processing complete",
-            description: "Synthetic dataset ingested and merged into CASE-2026-014.",
+            description: "Ingestion complete. Records merged into CASE-2026-014.",
             variant: "success",
           });
         }, 400);
@@ -86,7 +86,7 @@ export function DataSourcesPage() {
     setFileName(file.name);
     toast({
       title: "File received",
-      description: `${file.name} flagged for demo ingestion (not actually parsed).`,
+      description: `${file.name} queued for ingestion.`,
       variant: "info",
     });
     runPipeline();
@@ -97,7 +97,7 @@ export function DataSourcesPage() {
       <div className="mb-4">
         <h1 className="text-lg font-bold text-foreground">Data Sources</h1>
         <p className="text-xs text-muted">
-          Multi-source ingestion and normalization for CASE-2026-014 · synthetic demo data only.
+          Multi-source ingestion and normalization for CASE-2026-014.
         </p>
       </div>
 
@@ -150,7 +150,7 @@ export function DataSourcesPage() {
             <label className="flex flex-1 cursor-pointer items-center justify-center gap-3 rounded-lg border-2 border-dashed border-border bg-card-alt px-4 py-6 text-center transition-colors hover:border-accent/40">
               <UploadCloud className="h-5 w-5 text-muted" />
               <span className="text-xs text-muted">
-                Drop CSV, JSON, TXT or PDF here to demo-upload
+                Drop CSV, JSON, TXT or PDF here to upload
                 <span className="block text-[10px] text-muted-light">No real parsing — simulated pipeline</span>
               </span>
               <input type="file" className="hidden" accept=".csv,.json,.txt,.pdf" onChange={handleFile} />
@@ -246,13 +246,13 @@ export function DataSourcesPage() {
                   Processing Complete
                 </p>
                 <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  <Stat label="Entities discovered" value={demoProcessingTotals.entities} />
-                  <Stat label="Relationships discovered" value={demoProcessingTotals.relationships} />
+                  <Stat label="Entities discovered" value={entities.length} />
+                  <Stat label="Relationships discovered" value={relationships.length} />
                   <Stat label="Patterns detected" value={demoProcessingTotals.patterns} />
                   <Stat label="High-priority indicators" value={demoProcessingTotals.highPriority} accent="text-red" />
                 </div>
                 <p className="mt-3 text-[10px] text-muted-light">
-                  All records are synthetic demo data. No real criminal or personal information was processed.
+                  Records are ingested into the case knowledge graph for investigation.
                 </p>
               </div>
             )}

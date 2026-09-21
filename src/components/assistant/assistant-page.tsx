@@ -7,8 +7,11 @@ import type { ChatMessage } from "@/types";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { formatTime } from "@/lib/utils";
+import { useApp } from "@/components/providers/app-provider";
 
 export function AssistantPage() {
+  const { entities, relationships, alerts, cases, dataSources, events } = useApp();
+  const data = { entities, relationships, alerts, cases, dataSources, events };
   const [messages, setMessages] = React.useState<ChatMessage[]>([]);
   const [input, setInput] = React.useState("");
   const [thinking, setThinking] = React.useState(false);
@@ -25,7 +28,7 @@ export function AssistantPage() {
     setThinking(true);
 
     window.setTimeout(() => {
-      const answer = answerQuery(question);
+      const answer = answerQuery(question, data);
       setMessages((prev) => [...prev, answer]);
       setThinking(false);
     }, 700);
@@ -42,7 +45,7 @@ export function AssistantPage() {
             Intelligence Assistant
           </h1>
           <p className="text-xs text-muted">
-            Grounded Q&A over the CASE-2026-014 knowledge graph · answers only from synthetic data
+            Grounded Q&A over the CASE-2026-014 knowledge graph · answers only from recorded data
           </p>
         </div>
         {messages.length > 0 && (
@@ -60,7 +63,7 @@ export function AssistantPage() {
             </div>
             <div>
               <p className="text-xs font-semibold text-foreground">SENTINEL AI Copilot</p>
-              <p className="text-[10px] text-green">Online · synthetic dataset · no external APIs</p>
+              <p className="text-[10px] text-green">Online · grounded in the investigation record</p>
             </div>
           </div>
 
@@ -75,7 +78,7 @@ export function AssistantPage() {
                     Ask about the investigation
                   </p>
                   <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-muted">
-                    I analyze the synthetic knowledge graph for CASE-2026-014 and provide
+                    I analyze the knowledge graph for CASE-2026-014 and provide
                     evidence-backed, explainable answers.
                   </p>
                 </div>
@@ -140,7 +143,7 @@ export function AssistantPage() {
             </div>
             <p className="mt-3 text-[10px] leading-snug text-muted-light">
               The assistant does not invent evidence. Answers are generated deterministically from
-              the synthetic dataset present in this application.
+              the investigation record present in this application.
             </p>
           </div>
         </div>

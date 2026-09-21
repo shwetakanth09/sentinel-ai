@@ -11,7 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/toast";
 import { downloadFile } from "@/lib/utils";
 import { getAIInsights } from "@/lib/ai-assistant";
-import { caseData } from "@/lib/report-data";
+import type { InvestigationCase } from "@/types";
 
 const reportFindings = [
   {
@@ -37,13 +37,15 @@ const reportFindings = [
 ];
 
 export function ReportsPage() {
-  const { metrics, activeCaseId, entities, relationships } = useApp();
+  const { metrics, activeCaseId, entities, relationships, alerts, cases, dataSources, events } = useApp();
   const { toast } = useToast();
   const [generating, setGenerating] = React.useState(false);
   const [generated, setGenerated] = React.useState(false);
-  const caseInfo = caseData.find((c) => c.id === activeCaseId) ?? caseData[0];
-  const insights = getAIInsights();
+  const caseInfo = cases.find((c) => c.id === activeCaseId) ?? cases[0];
+  const insights = getAIInsights({ entities, relationships, alerts, cases, dataSources, events });
   const findings = reportFindings;
+
+  if (!caseInfo) return null;
 
   const generate = () => {
     setGenerating(true);
@@ -96,7 +98,7 @@ export function ReportsPage() {
 
   const shareCase = () => {
     toast({ title: "Share link copied", description: `${caseInfo.id} shared link copied to clipboard.`, variant: "success" });
-    navigator.clipboard?.writeText(`https://sentinel-ai.demo/shared/${caseInfo.id}`);
+    navigator.clipboard?.writeText(`${window.location.origin}/reports?case=${caseInfo.id}`);
   };
 
   const counts = {
@@ -164,7 +166,7 @@ export function ReportsPage() {
                   <p className="text-sm font-medium text-foreground">No report generated yet</p>
                   <p className="max-w-sm text-xs text-muted">
                     Click “Generate Investigation Summary” to build the case analysis from the
-                    synthetic knowledge graph.
+                    investigation record.
                   </p>
                 </div>
               )}
@@ -188,8 +190,8 @@ export function ReportsPage() {
                 <Share2 className="h-4 w-4" /> Share Case
               </Button>
               <p className="pt-1 text-[10px] leading-snug text-muted-light">
-                PDF export is client-side (browser print). All data is synthetic demo data —
-                generated reports are not official police documents.
+                PDF export is client-side (browser print). Generated reports are internal
+internals and not automatically official police documents.
               </p>
             </CardContent>
           </Card>
@@ -287,15 +289,15 @@ function ReportPreview({
 
       <Separator />
       <p className="text-center text-[10px] text-muted-light">
-        Prepared for demonstration · DEMO ENVIRONMENT — All investigation data is synthetic.
-        AI-generated insights are decision-support indicators and require human verification.
+        Prepared for CASE-2026-014. AI-generated insights are decision-support indicators and
+        require human verification.
       </p>
     </div>
   );
 }
 
 function renderPdfHtml(
-  caseInfo: typeof caseData[number],
+  caseInfo: InvestigationCase,
   insights: ReturnType<typeof getAIInsights>,
   findings: { id: string; text: string; confidence: number }[]
 ) {
@@ -355,8 +357,8 @@ function renderPdfHtml(
       <div>${i.evidenceCount} evidence items · ${Math.round(i.confidence * 100)}% confidence</div>
     </div>`).join("")}
   <div class="disclaimer">
-    DEMO ENVIRONMENT — All investigation data is synthetic. AI-generated insights are
-    decision-support indicators and require human verification. Not an official police document.
+    AI-generated insights are decision-support indicators and require human verification.
+    Not an official police document.
   </div>
 </body>
 </html>`;

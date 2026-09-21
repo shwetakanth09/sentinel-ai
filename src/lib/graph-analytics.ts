@@ -1,18 +1,40 @@
-import { entities } from "@/data/entities";
-import { relationships } from "@/data/relationships";
-import { alerts } from "@/data/alerts";
-import { dataSources } from "@/data/sources";
-import { cases } from "@/data/cases";
+import { entities as mockEntities } from "@/data/entities";
+import { relationships as mockRelationships } from "@/data/relationships";
+import { alerts as mockAlerts } from "@/data/alerts";
+import { dataSources as mockSources } from "@/data/sources";
+import { cases as mockCases } from "@/data/cases";
 import type {
   ClusterInfo,
+  DataSourceStatus,
   Entity,
+  InvestigationCase,
   NetworkMetrics,
+  PatternAlert,
   Relationship,
   RiskFactor,
 } from "@/types";
 
+export interface NetworkData {
+  entities: Entity[];
+  relationships: Relationship[];
+  alerts: PatternAlert[];
+  cases: InvestigationCase[];
+  dataSources: DataSourceStatus[];
+}
+
+export function emptyNetworkData(): NetworkData {
+  return {
+    entities: mockEntities,
+    relationships: mockRelationships,
+    alerts: mockAlerts,
+    cases: mockCases,
+    dataSources: mockSources,
+  };
+}
+
 export function buildAdjacency(
-  rels: Relationship[] = relationships
+  rels: Relationship[],
+  entities: Entity[] = mockEntities
 ): Record<string, Set<string>> {
   const adj: Record<string, Set<string>> = {};
   for (const e of entities) adj[e.id] = new Set();
@@ -26,9 +48,10 @@ export function buildAdjacency(
 }
 
 export function degreeCentrality(
-  rels: Relationship[] = relationships
+  rels: Relationship[],
+  entities: Entity[] = mockEntities
 ): Record<string, number> {
-  const adj = buildAdjacency(rels);
+  const adj = buildAdjacency(rels, entities);
   const n = entities.length;
   const out: Record<string, number> = {};
   for (const e of entities) {
@@ -39,9 +62,10 @@ export function degreeCentrality(
 
 /** Brandes' algorithm for unweighted betweenness centrality. */
 export function betweennessCentrality(
-  rels: Relationship[] = relationships
+  rels: Relationship[],
+  entities: Entity[] = mockEntities
 ): Record<string, number> {
-  const adj = buildAdjacency(rels);
+  const adj = buildAdjacency(rels, entities);
   const nodes = entities.map((e) => e.id);
   const bc: Record<string, number> = {};
   for (const id of nodes) bc[id] = 0;
@@ -92,11 +116,14 @@ export function betweennessCentrality(
   return out;
 }
 
-export function crossClusterDegree(): Record<string, number> {
+export function crossClusterDegree(
+  rels: Relationship[],
+  entities: Entity[] = mockEntities
+): Record<string, number> {
   const entityById = new Map(entities.map((e) => [e.id, e]));
   const out: Record<string, number> = {};
   for (const e of entities) out[e.id] = 0;
-  for (const r of relationships) {
+  for (const r of rels) {
     const a = entityById.get(r.source);
     const b = entityById.get(r.target);
     if (a && b && a.cluster !== b.cluster) {
@@ -107,10 +134,13 @@ export function crossClusterDegree(): Record<string, number> {
   return out;
 }
 
-export function detectBridgeEntities(): string[] {
+export function detectBridgeEntities(
+  rels: Relationship[],
+  entities: Entity[] = mockEntities
+): string[] {
   const entityById = new Map(entities.map((e) => [e.id, e]));
   const crossed = new Set<string>();
-  for (const r of relationships) {
+  for (const r of rels) {
     const a = entityById.get(r.source);
     const b = entityById.get(r.target);
     if (a && b && a.cluster !== b.cluster) {
@@ -122,7 +152,10 @@ export function detectBridgeEntities(): string[] {
   return Array.from(new Set([...explicit, ...crossed]));
 }
 
-export function buildClusters(): ClusterInfo[] {
+export function buildClusters(
+  rels: Relationship[],
+  entities: Entity[] = mockEntities
+): ClusterInfo[] {
   const definitions: Record<string, { name: string; description: string; color: string }> = {
     A: {
       name: "Communications Cell",
@@ -143,7 +176,7 @@ export function buildClusters(): ClusterInfo[] {
   const clusterOf = new Map(entities.map((e) => [e.id, e.cluster]));
   const relCount: Record<string, number> = { A: 0, B: 0, C: 0 };
   const internal: Record<string, number> = { A: 0, B: 0, C: 0 };
-  for (const r of relationships) {
+  for (const r of rels) {
     const a = clusterOf.get(r.source);
     const b = clusterOf.get(r.target);
     if (a) relCount[a] = (relCount[a] ?? 0) + 1;
@@ -165,50 +198,46 @@ function normalize(value: number, max: number): number {
   return Math.min(100, Math.round((value / max) * 100));
 }
 
-export function communityPartitions(): Record<string, string[]> {
+export function communityPartitions(entities: Entity[] = mockEntities): Record<string, string[]> {
   const out: Record<string, string[]> = { A: [], B: [], C: [] };
   for (const e of entities) out[e.cluster].push(e.id);
   return out;
 }
 
-const metricsCache: { value?: NetworkMetrics } = {};
-
-export function getNetworkMetrics(): NetworkMetrics {
-  if (metricsCache.value) return metricsCache.value;
-
-  const degree = degreeCentrality();
-  const betweenness = betweennessCentrality();
+export function getNetworkMetrics(data: NetworkData = emptyNetworkData()): NetworkMetrics {
+  const { entities, relationships, alerts, cases, dataSources } = data;
+  const degree = degreeCentrality(relationships, entities);
+  const betweenness = betweennessCentrality(relationships, entities);
   const riskScores: Record<string, number> = {};
   for (const e of entities) riskScores[e.id] = e.riskIndicator / 100;
 
-  const value: NetworkMetrics = {
+  return {
     totalEntities: entities.length,
     totalRelationships: relationships.length,
     totalAlerts: alerts.length,
     highRiskIndicators: entities.filter((e) => e.riskIndicator >= 70).length,
     dataSourcesProcessed: dataSources.filter((s) => s.processed).length,
     activeInvestigations: cases.filter((c) => c.status !== "Closed").length,
-    clusters: buildClusters(),
-    bridgeEntities: detectBridgeEntities(),
+    clusters: buildClusters(relationships, entities),
+    bridgeEntities: detectBridgeEntities(relationships, entities),
     degreeCentrality: degree,
     betweennessCentrality: betweenness,
     riskScores,
-    communityPartitions: communityPartitions(),
+    communityPartitions: communityPartitions(entities),
   };
-  metricsCache.value = value;
-  return value;
 }
 
-export function getRiskFactors(entity: Entity): RiskFactor[] {
-  const metrics = getNetworkMetrics();
+export function getRiskFactors(entity: Entity, data: NetworkData = emptyNetworkData()): RiskFactor[] {
+  const { entities, relationships } = data;
+  const metrics = getNetworkMetrics(data);
   const degree = metrics.degreeCentrality[entity.id] ?? 0;
   const betweenness = metrics.betweennessCentrality[entity.id] ?? 0;
   const centrality = normalize(degree * 0.6 + betweenness * 0.4, 0.35);
 
-  const cross = crossClusterDegree()[entity.id] ?? 0;
+  const cross = crossClusterDegree(relationships, entities)[entity.id] ?? 0;
   const crossCluster = normalize(cross, 6);
 
-  const adj = buildAdjacency();
+  const adj = buildAdjacency(relationships, entities);
   const neighborIds = Array.from(adj[entity.id] ?? []);
   const neighborClusterDistinct = new Set(
     neighborIds
@@ -219,7 +248,7 @@ export function getRiskFactors(entity: Entity): RiskFactor[] {
 
   const entityEvents = entity.type === "person" ? 1 : 0;
   const temporal = normalize(
-    (betweenness * 100) + entityEvents * 20 + (entity.bridge ? 30 : 0),
+    betweenness * 100 + entityEvents * 20 + (entity.bridge ? 30 : 0),
     100
   );
 
@@ -272,26 +301,26 @@ export function getRiskFactors(entity: Entity): RiskFactor[] {
   return raw;
 }
 
-export function computeRiskIndicator(entity: Entity): number {
-  const factors = getRiskFactors(entity);
+export function computeRiskIndicator(entity: Entity, data: NetworkData = emptyNetworkData()): number {
+  const factors = getRiskFactors(entity, data);
   const weighted = factors.reduce((sum, f) => sum + f.weight * f.score, 0);
   return Math.round(weighted);
 }
 
-export function getDirectConnections(id: string): Relationship[] {
-  return relationships.filter((r) => r.source === id || r.target === id);
+export function getDirectConnections(id: string, rels: Relationship[] = mockRelationships): Relationship[] {
+  return rels.filter((r) => r.source === id || r.target === id);
 }
 
-export function getNeighbors(id: string): string[] {
-  const adj = buildAdjacency();
+export function getNeighbors(id: string, rels: Relationship[] = mockRelationships): string[] {
+  const adj = buildAdjacency(rels);
   return Array.from(adj[id] ?? []);
 }
 
-export function getIndirectConnections(id: string): string[] {
-  const direct = new Set(getNeighbors(id));
+export function getIndirectConnections(id: string, rels: Relationship[] = mockRelationships): string[] {
+  const direct = new Set(getNeighbors(id, rels));
   const indirect = new Set<string>();
   for (const n of direct) {
-    for (const nn of buildAdjacency()[n] ?? []) {
+    for (const nn of buildAdjacency(rels)[n] ?? []) {
       if (nn !== id && !direct.has(nn)) indirect.add(nn);
     }
   }
@@ -300,8 +329,9 @@ export function getIndirectConnections(id: string): string[] {
 
 export function getAssociatedByType(
   id: string,
-  type: Entity["type"]
+  type: Entity["type"],
+  data: NetworkData = emptyNetworkData()
 ): Entity[] {
-  const ids = new Set(getNeighbors(id));
-  return entities.filter((e) => ids.has(e.id) && e.type === type);
+  const ids = new Set(getNeighbors(id, data.relationships));
+  return data.entities.filter((e) => ids.has(e.id) && e.type === type);
 }

@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { ArrowUpRight, ArrowDownLeft } from "lucide-react";
 import { getDirectConnections } from "@/lib/graph-analytics";
-import { getEntityName } from "@/data/entities";
+import { entityName } from "@/lib/entity-helpers";
+import { useApp } from "@/components/providers/app-provider";
 import { RELATIONSHIP_COLORS } from "@/lib/entity-config";
 import { formatDateTime } from "@/lib/utils";
 
 export function ConnectionList({ entityId }: { entityId: string }) {
-  const rels = getDirectConnections(entityId).sort(
+  const { relationships, entities } = useApp();
+  const rels = getDirectConnections(entityId, relationships).sort(
     (a, b) => b.confidence - a.confidence
   );
 
@@ -37,7 +39,7 @@ export function ConnectionList({ entityId }: { entityId: string }) {
                 <ArrowDownLeft className="h-3.5 w-3.5 shrink-0" style={{ color }} />
               )}
               <span className="truncate text-xs text-foreground">
-                {getEntityName(other)}
+                {entityName(entities, other)}
               </span>
             </div>
             <div className="flex shrink-0 items-center gap-2">

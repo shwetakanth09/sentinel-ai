@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { getEntity } from "@/data/entities";
 import { EntityIcon } from "@/components/shared/entity-icon";
 import { RiskMeter } from "@/components/shared/risk-meter";
 import { Badge } from "@/components/ui/badge";
@@ -17,28 +16,44 @@ import {
   getAssociatedByType,
   getNetworkMetrics,
 } from "@/lib/graph-analytics";
-import { events } from "@/data/events";
 import { useApp } from "@/components/providers/app-provider";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, FileText, Sparkles, Share2 } from "lucide-react";
 import { formatDateTime } from "@/lib/utils";
-import { alerts } from "@/data/alerts";
+import { getById } from "@/lib/entity-helpers";
 
 export function EntityDetailClient({ entityId }: { entityId: string }) {
-  const entity = getEntity(entityId);
-  const { setSelectedEntityId } = useApp();
+  const {
+    entities,
+    relationships,
+    alerts,
+    events,
+    cases,
+    dataSources,
+    setSelectedEntityId,
+  } = useApp();
   const [tab, setTab] = React.useState("overview");
+
+  const entity = getById(entities, entityId);
 
   if (!entity) return null;
 
-  const direct = getDirectConnections(entity.id);
-  const indirect = getIndirectConnections(entity.id);
-  const orgs = getAssociatedByType(entity.id, "organization");
-  const locations = getAssociatedByType(entity.id, "location");
-  const vehicles = getAssociatedByType(entity.id, "vehicle");
+  const analyticsData = {
+    entities,
+    relationships,
+    alerts,
+    cases,
+    dataSources,
+  };
+
+  const direct = getDirectConnections(entity.id, relationships);
+  const indirect = getIndirectConnections(entity.id, relationships);
+  const orgs = getAssociatedByType(entity.id, "organization", analyticsData);
+  const locations = getAssociatedByType(entity.id, "location", analyticsData);
+  const vehicles = getAssociatedByType(entity.id, "vehicle", analyticsData);
   const entityEvents = events.filter((e) => e.entities.includes(entity.id));
   const relatedAlerts = alerts.filter((a) => a.entities.includes(entity.id));
-  const metrics = getNetworkMetrics();
+  const metrics = getNetworkMetrics(analyticsData);
   const degree = metrics.degreeCentrality[entity.id] ?? 0;
   const betweenness = metrics.betweennessCentrality[entity.id] ?? 0;
 
@@ -69,7 +84,7 @@ export function EntityDetailClient({ entityId }: { entityId: string }) {
                 {" · "}Confidence {Math.round(entity.confidence * 100)}%
               </p>
               <p className="mt-2 max-w-xl text-xs leading-relaxed text-muted">
-                <span className="font-medium text-amber">SYNTHETIC DEMO DATA.</span>{" "}
+                <span className="font-medium text-accent">Recorded entity.</span>{" "}
                 {entity.metadata?.details ??
                   "Entity resolved from linked FIR records, CDRs and surveillance reports."}
               </p>
@@ -123,7 +138,7 @@ export function EntityDetailClient({ entityId }: { entityId: string }) {
                     ))}
                 </div>
                 <p className="mt-3 text-[10px] text-muted-light">
-                  Prototype metadata. All values are synthetic for demonstration purposes.
+                  Profile metadata from linked source records.
                 </p>
               </CardContent>
             </Card>

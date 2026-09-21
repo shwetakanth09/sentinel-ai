@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
-import { getEntity } from "@/data/entities";
+import { getById } from "@/lib/entity-helpers";
 import { cn } from "@/lib/utils";
 
 const TYPE_BADGE: Record<string, string> = {
@@ -19,7 +19,7 @@ const TYPE_BADGE: Record<string, string> = {
 };
 
 export function NlpAnalysisPage() {
-  const { nlpDocuments, addToNetwork } = useApp();
+  const { nlpDocuments, addToNetwork, entities } = useApp();
   const { toast } = useToast();
   const [docId, setDocId] = React.useState("DOC-001");
   const [analyzing, setAnalyzing] = React.useState(false);
@@ -46,7 +46,7 @@ export function NlpAnalysisPage() {
         target: nameToId.get(r.target) ?? r.target,
         type: r.type as "MET" | "CONTACTED" | "ASSOCIATED_WITH" | "OBSERVED_AT" | "ATTENDED" | "CONNECTED_TO" | "CALLED" | "WORKS_FOR" | "LOCATED_AT" | "USED" | "TRANSFERRED_TO" | "REGISTERED_TO",
       }))
-      .filter((r) => !!getEntity(r.source) && !!getEntity(r.target));
+      .filter((r) => !!getById(entities, r.source) && !!getById(entities, r.target));
     addToNetwork(resolved);
     setAdded(true);
     toast({
@@ -120,7 +120,7 @@ export function NlpAnalysisPage() {
               })}
             </div>
             <div className="mt-3 flex items-center justify-between">
-              <p className="text-[10px] text-muted-light">{doc.source} · synthetic report</p>
+              <p className="text-[10px] text-muted-light">{doc.source} · intelligence report</p>
               <Button size="sm" variant="outline" onClick={runAnalysis} disabled={analyzing}>
                 {analyzing ? (
                   <>
@@ -156,7 +156,7 @@ export function NlpAnalysisPage() {
                   </thead>
                   <tbody>
                     {doc.extractedEntities.map((e) => {
-                      const known = getEntity(e.id);
+                      const known = getById(entities, e.id);
                       return (
                         <tr key={e.name} className="border-b border-border/50">
                           <td className="px-4 py-2">

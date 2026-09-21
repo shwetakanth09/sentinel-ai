@@ -20,8 +20,12 @@ const ROUTE_LABELS: Record<string, string> = {
   "/nlp-analysis": "Document Analysis",
 };
 
+const AUTH_PATHS = ["/login", "/register"];
+
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  if (AUTH_PATHS.includes(pathname)) return <>{children}</>;
+
   const label = ROUTE_LABELS[pathname] ?? (pathname.startsWith("/entities/") ? "Entity" : "Sentinel");
   const isDashboard = pathname === "/";
 
